@@ -49,6 +49,25 @@ class Store {
         return product;
     }
 
+    updateProduct(product) {
+        const data = this.getAll();
+        const index = data.products.findIndex(p => p.id === product.id);
+        if (index !== -1) {
+            data.products[index] = product;
+            this.saveAll(data);
+            return true;
+        }
+        return false;
+    }
+
+    deleteProduct(id) {
+        const data = this.getAll();
+        data.products = data.products.filter(p => p.id !== id);
+        // Also delete related transactions
+        data.transactions = data.transactions.filter(t => t.productId !== id);
+        this.saveAll(data);
+    }
+
     getProductById(id) {
         return this.getProducts().find(p => p.id === id);
     }
@@ -64,6 +83,27 @@ class Store {
         data.transactions.push(tx);
         this.saveAll(data);
         return tx;
+    }
+
+    updateTransaction(tx) {
+        const data = this.getAll();
+        const index = data.transactions.findIndex(t => t.id === tx.id);
+        if (index !== -1) {
+            data.transactions[index] = tx;
+            this.saveAll(data);
+            return true;
+        }
+        return false;
+    }
+
+    deleteTransaction(id) {
+        const data = this.getAll();
+        data.transactions = data.transactions.filter(t => t.id !== id);
+        this.saveAll(data);
+    }
+
+    getTransactionById(id) {
+        return this.getTransactions().find(t => t.id === id);
     }
 
     // --- Inventory Calculations ---

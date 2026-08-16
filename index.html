@@ -120,8 +120,10 @@
                                 <label>Min Stock Alert</label>
                                 <input type="number" id="p_min" required min="0" value="10">
                             </div>
-                            <div class="form-group" style="display: flex; align-items: flex-end;">
-                                <button type="submit" class="btn btn-primary" style="width: 100%">Add Product</button>
+                            <div class="form-group" style="display: flex; align-items: flex-end; gap: 10px;">
+                                <input type="hidden" id="p_id">
+                                <button type="submit" class="btn btn-primary" id="btn_save_product" style="flex:1;">Add Product</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_product" style="display:none;" onclick="cancelProductEdit()">Cancel</button>
                             </div>
                         </div>
                     </form>
@@ -135,6 +137,7 @@
                             <th>Cost</th>
                             <th>Price</th>
                             <th>Current Stock</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -179,8 +182,10 @@
                                 <label>Pending Amount (₹)</label>
                                 <input type="number" id="in_pending" readonly>
                             </div>
-                            <div class="form-group" style="grid-column: span 2;">
-                                <button type="submit" class="btn btn-primary">Save Stock IN</button>
+                            <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
+                                <input type="hidden" id="in_id">
+                                <button type="submit" class="btn btn-primary" id="btn_save_in">Save Stock IN</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_in" style="display:none;" onclick="cancelTxEdit('in')">Cancel Edit</button>
                             </div>
                         </div>
                     </form>
@@ -225,8 +230,10 @@
                                 <label>Pending Amount (₹)</label>
                                 <input type="number" id="out_pending" readonly>
                             </div>
-                            <div class="form-group" style="grid-column: span 2;">
-                                <button type="submit" class="btn btn-success">Issue Stock OUT</button>
+                            <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
+                                <input type="hidden" id="out_id">
+                                <button type="submit" class="btn btn-success" id="btn_save_out">Issue Stock OUT</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_out" style="display:none;" onclick="cancelTxEdit('out')">Cancel Edit</button>
                             </div>
                         </div>
                     </form>
@@ -255,6 +262,7 @@
                             <th>Total</th>
                             <th>Paid</th>
                             <th>Pending</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

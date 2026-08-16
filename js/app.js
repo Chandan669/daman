@@ -33,6 +33,7 @@ function escapeHTML(str) {
 // --- 3. PRODUCTS MASTER ---
 function handleProductSubmit(e) {
     e.preventDefault();
+    const pid = document.getElementById('p_id').value;
     const product = {
         name: document.getElementById('p_name').value,
         color: document.getElementById('p_color').value,
@@ -43,11 +44,52 @@ function handleProductSubmit(e) {
         openingStock: parseFloat(document.getElementById('p_open').value) || 0,
         minStock: parseFloat(document.getElementById('p_min').value) || 0
     };
-    db.addProduct(product);
-    showAlert('Product added successfully!');
-    document.getElementById('form-product').reset();
+
+    if (pid) {
+        product.id = pid;
+        db.updateProduct(product);
+        showAlert('Product updated successfully!');
+        cancelProductEdit();
+    } else {
+        db.addProduct(product);
+        showAlert('Product added successfully!');
+        document.getElementById('form-product').reset();
+    }
     renderProducts();
     updateSelectors();
+}
+
+function editProduct(id) {
+    const p = db.getProductById(id);
+    if (!p) return;
+    document.getElementById('p_id').value = p.id;
+    document.getElementById('p_name').value = p.name;
+    document.getElementById('p_color').value = p.color;
+    document.getElementById('p_size').value = p.size;
+    document.getElementById('p_sleeve').value = p.sleeve;
+    document.getElementById('p_cost').value = p.costPrice;
+    document.getElementById('p_sell').value = p.sellingPrice;
+    document.getElementById('p_open').value = p.openingStock;
+    document.getElementById('p_min').value = p.minStock;
+
+    document.getElementById('btn_save_product').textContent = "Update Product";
+    document.getElementById('btn_cancel_product').style.display = "inline-block";
+    window.scrollTo(0, 0);
+}
+
+function cancelProductEdit() {
+    document.getElementById('p_id').value = "";
+    document.getElementById('form-product').reset();
+    document.getElementById('btn_save_product').textContent = "Add Product";
+    document.getElementById('btn_cancel_product').style.display = "none";
+}
+
+function deleteProduct(id) {
+    if(confirm("Are you sure you want to delete this product? All related transactions will also be deleted!")) {
+        db.deleteProduct(id);
+        showAlert('Product deleted successfully!', 'success');
+        refreshData();
+    }
 }
 
 function renderProducts() {
@@ -65,6 +107,10 @@ function renderProducts() {
             <td>${formatCurrency(p.costPrice)}</td>
             <td>${formatCurrency(p.sellingPrice)}</td>
             <td style="color: ${currentStock <= p.minStock ? 'var(--accent-red)' : 'var(--accent-green)'}"><strong>${currentStock}</strong></td>
+            <td>
+                <button onclick="editProduct('${p.id}')" class="btn btn-info" style="padding: 5px 10px; font-size: 0.8em; margin-right: 5px;">Edit</button>
+                <button onclick="deleteProduct('${p.id}')" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;">Del</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -122,6 +168,7 @@ document.getElementById('in_product')?.addEventListener('change', (e) => {
 function handleTxSubmit(e, type) {
     e.preventDefault();
     const prefix = type === 'IN' ? 'in' : 'out';
+    const txId = document.getElementById(`${prefix}_id`).value;
 
     const pid = document.getElementById(`${prefix}_product`).value;
     if(!pid) {
@@ -131,7 +178,7 @@ function handleTxSubmit(e, type) {
 
     const qty = parseFloat(document.getElementById(`${prefix}_qty`).value);
 
-    if(type === 'OUT') {
+    if(type === 'OUT' && !txId) { // Only strict check on new OUTs
         const stock = db.getProductStock(pid);
         if(qty > stock) {
             showAlert(`Insufficient stock! Only ${stock} available.`, 'error');
@@ -151,13 +198,60 @@ function handleTxSubmit(e, type) {
         pending: parseFloat(document.getElementById(`${prefix}_pending`).value)
     };
 
-    db.addTransaction(tx);
-    showAlert(`Stock ${type} successful!`);
-    document.getElementById(`form-${prefix}`).reset();
+    if (txId) {
+        tx.id = txId;
+        db.updateTransaction(tx);
+        showAlert(`Stock ${type} updated successfully!`);
+        cancelTxEdit(prefix);
+    } else {
+        db.addTransaction(tx);
+        showAlert(`Stock ${type} successful!`);
+        document.getElementById(`form-${prefix}`).reset();
+    }
+
     updateSelectors(); // Update stock counts in dropdowns
 
     // trigger 3d animation if on dashboard (will be handled by refreshData if integrated)
     if(typeof animateTshirt === 'function') animateTshirt();
+}
+
+function editTransaction(id) {
+    const t = db.getTransactionById(id);
+    if (!t) return;
+
+    const prefix = t.type === 'IN' ? 'in' : 'out';
+
+    // Navigate to the correct view
+    showView(prefix === 'in' ? 'stockin' : 'stockout');
+
+    document.getElementById(`${prefix}_id`).value = t.id;
+    document.getElementById(`${prefix}_date`).value = t.date;
+    document.getElementById(`${prefix}_entity`).value = t.entityName;
+    document.getElementById(`${prefix}_product`).value = t.productId;
+    document.getElementById(`${prefix}_qty`).value = t.qty;
+    document.getElementById(`${prefix}_rate`).value = t.rate;
+    document.getElementById(`${prefix}_total`).value = t.total;
+    document.getElementById(`${prefix}_paid`).value = t.paid;
+    document.getElementById(`${prefix}_pending`).value = t.pending;
+
+    document.getElementById(`btn_save_${prefix}`).textContent = `Update Stock ${t.type}`;
+    document.getElementById(`btn_cancel_${prefix}`).style.display = "inline-block";
+    window.scrollTo(0, 0);
+}
+
+function cancelTxEdit(prefix) {
+    document.getElementById(`${prefix}_id`).value = "";
+    document.getElementById(`form-${prefix}`).reset();
+    document.getElementById(`btn_save_${prefix}`).textContent = prefix === 'in' ? "Save Stock IN" : "Issue Stock OUT";
+    document.getElementById(`btn_cancel_${prefix}`).style.display = "none";
+}
+
+function deleteTransaction(id) {
+    if(confirm("Are you sure you want to delete this transaction?")) {
+        db.deleteTransaction(id);
+        showAlert('Transaction deleted successfully!', 'success');
+        refreshData();
+    }
 }
 
 // --- 5. DASHBOARD & LEDGER ---
@@ -242,6 +336,10 @@ function renderLedger() {
             <td>${formatCurrency(t.total)}</td>
             <td>${formatCurrency(t.paid)}</td>
             <td style="color: ${t.pending > 0 ? 'var(--accent-red)' : 'var(--text-main)'}">${formatCurrency(t.pending)}</td>
+            <td>
+                <button onclick="editTransaction('${t.id}')" class="btn btn-info" style="padding: 5px 10px; font-size: 0.8em; margin-right: 5px;">Edit</button>
+                <button onclick="deleteTransaction('${t.id}')" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;">Del</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
