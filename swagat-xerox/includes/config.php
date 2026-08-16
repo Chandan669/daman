@@ -16,7 +16,7 @@ if (!is_dir(SIGNATURE_DIR)) mkdir(SIGNATURE_DIR, 0755, true);
 $settings = [
     'company_name' => 'SWAGAT XEROX CENTER',
     'company_subtitle' => 'XEROX • PRINT • COPY • SCAN • BINDING',
-    'admin_password' => password_hash('admin123', PASSWORD_DEFAULT),
+    'admin_password' => password_hash('Chandan988@@@', PASSWORD_DEFAULT),
     'memo_counter' => 0,
     'default_payment_method' => 'Cash',
     'default_item_rows' => 5,
