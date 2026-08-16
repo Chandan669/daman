@@ -1,0 +1,20 @@
+{
+    "memo_no": "M00001",
+    "date": "2024-08-16",
+    "payment_method": "Cash",
+    "customer_name": "Test User",
+    "address": "",
+    "mobile_number": "",
+    "items": [
+        {
+            "desc": "Test Print",
+            "qty": 10,
+            "rate": 5,
+            "amount": 50
+        }
+    ],
+    "subtotal": 50,
+    "discount": 5,
+    "total": 45,
+    "created_at": "2026-08-16 04:09:02"
+}

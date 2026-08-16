@@ -1,0 +1,23 @@
+/* Print specific CSS */
+@page {
+    size: A4 portrait;
+    margin: 0; /* Important: removes default browser margins */
+}
+
+/* Ensure background colors and images are printed */
+* {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+}
+
+/* Fallback hide controls if they leak */
+.print-controls, .hide-on-print {
+    display: none !important;
+}
