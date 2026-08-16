@@ -3,368 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D T-Shirt Stock Management</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            background-color: #1e1e24;
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #canvas-container {
-            flex: 1;
-            position: relative;
-        }
-        #ui-container {
-            flex: 1;
-            padding: 40px;
-            background: #2b2b36;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        h1 {
-            color: #ff6b6b;
-            text-align: center;
-            border-bottom: 2px solid #ff6b6b;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .control-group {
-            background: #363645;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .control-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        select, input, button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        select, input {
-            background-color: #4a4a5e;
-            color: white;
-        }
-        button {
-            background-color: #ff6b6b;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #ff4757;
-        }
-        .btn-sell {
-            background-color: #1dd1a1;
-        }
-        .btn-sell:hover {
-            background-color: #10ac84;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-        }
-        .stat-card {
-            background: #363645;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border-top: 4px solid #ff6b6b;
-        }
-        .stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.2em;
-        }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            color: #ccc;
-        }
-        .stat-value {
-            font-weight: bold;
-            color: white;
-            font-size: 1.1em;
-        }
-        #alert-box {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            text-align: center;
-            display: none;
-        }
-        .alert-success { background-color: rgba(29, 209, 161, 0.2); border: 1px solid #1dd1a1; color: #1dd1a1; }
-        .alert-error { background-color: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: #ff6b6b; }
-    </style>
+    <title>BAZRIO Stock Manager</title>
+    <link rel="stylesheet" href="css/style.css">
     <!-- Include Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Include html2pdf for Reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
+    <div id="alert-container"></div>
 
-    <div id="ui-container">
-        <h1>T-Shirt Stock Management</h1>
+    <div id="app-container">
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="brand">BAZRIO.COM</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showView('dashboard')" class="active" id="nav-dashboard">Dashboard</a></li>
+                <li><a href="#" onclick="showView('products')" id="nav-products">Products Master</a></li>
+                <li><a href="#" onclick="showView('stockin')" id="nav-stockin">Stock IN</a></li>
+                <li><a href="#" onclick="showView('stockout')" id="nav-stockout">Stock OUT (Issue)</a></li>
+                <li><a href="#" onclick="showView('ledger')" id="nav-ledger">Ledger / Payments</a></li>
+                <li><a href="#" onclick="showView('reports')" id="nav-reports">Reports & PDF</a></li>
+                <li><a href="#" onclick="showView('settings')" id="nav-settings">Settings & Backup</a></li>
+            </ul>
+        </nav>
 
-        <div id="alert-box"></div>
+        <!-- Main Content Area -->
+        <main id="main-content">
 
-        <div class="controls">
-            <div class="control-group">
-                <h3>Add Stock (In)</h3>
-                <label for="add-size">Size:</label>
-                <select id="add-size">
-                    <option value="S">Small (S)</option>
-                    <option value="M">Medium (M)</option>
-                    <option value="L">Large (L)</option>
-                    <option value="XL">Extra Large (XL)</option>
-                    <option value="XXXL">Extra Extra Extra Large (XXXL)</option>
-                </select>
-                <label for="add-qty">Quantity:</label>
-                <input type="number" id="add-qty" min="1" value="1">
-                <button onclick="addStock()">Add Stock</button>
-            </div>
-
-            <div class="control-group">
-                <h3>Sell Stock (Out)</h3>
-                <label for="sell-size">Size:</label>
-                <select id="sell-size">
-                    <option value="S">Small (S)</option>
-                    <option value="M">Medium (M)</option>
-                    <option value="L">Large (L)</option>
-                    <option value="XL">Extra Large (XL)</option>
-                    <option value="XXXL">Extra Extra Extra Large (XXXL)</option>
-                </select>
-                <label for="sell-qty">Quantity:</label>
-                <input type="number" id="sell-qty" min="1" value="1">
-                <button class="btn-sell" onclick="sellStock()">Sell Stock</button>
-            </div>
-        </div>
-
-        <h2>Current Inventory</h2>
-        <div class="stats-grid" id="stats-container">
-            <!-- Stats will be injected here via JS -->
-        </div>
-    </div>
-
-    <script>
-        // --- 1. LOCAL STORAGE MANAGEMENT (No Database) ---
-
-        // Initialize default data structure if it doesn't exist
-        const defaultStock = {
-            S: { added: 0, sold: 0 },
-            M: { added: 0, sold: 0 },
-            L: { added: 0, sold: 0 },
-            XL: { added: 0, sold: 0 },
-            XXXL: { added: 0, sold: 0 }
-        };
-
-        function getStockData() {
-            const data = localStorage.getItem('tshirtStockData');
-            return data ? JSON.parse(data) : defaultStock;
-        }
-
-        function saveStockData(data) {
-            localStorage.setItem('tshirtStockData', JSON.stringify(data));
-            updateUI();
-            animateTshirt(); // Trigger visual feedback
-        }
-
-        function showAlert(msg, isSuccess) {
-            const box = document.getElementById('alert-box');
-            box.textContent = msg;
-            box.className = isSuccess ? 'alert-success' : 'alert-error';
-            box.style.display = 'block';
-            setTimeout(() => { box.style.display = 'none'; }, 3000);
-        }
-
-        function addStock() {
-            const size = document.getElementById('add-size').value;
-            const qty = parseInt(document.getElementById('add-qty').value);
-
-            if(isNaN(qty) || qty <= 0) {
-                showAlert('Please enter a valid quantity.', false);
-                return;
-            }
-
-            let data = getStockData();
-            data[size].added += qty;
-            saveStockData(data);
-            showAlert(`Successfully added ${qty} ${size} t-shirts.`, true);
-        }
-
-        function sellStock() {
-            const size = document.getElementById('sell-size').value;
-            const qty = parseInt(document.getElementById('sell-qty').value);
-
-            if(isNaN(qty) || qty <= 0) {
-                showAlert('Please enter a valid quantity.', false);
-                return;
-            }
-
-            let data = getStockData();
-            const currentStock = data[size].added - data[size].sold;
-
-            if (qty > currentStock) {
-                showAlert(`Error: Only ${currentStock} ${size} t-shirts left in stock!`, false);
-                return;
-            }
-
-            data[size].sold += qty;
-            saveStockData(data);
-            showAlert(`Successfully sold ${qty} ${size} t-shirts.`, true);
-        }
-
-        function updateUI() {
-            const data = getStockData();
-            const container = document.getElementById('stats-container');
-            container.innerHTML = '';
-
-            const sizes = ['S', 'M', 'L', 'XL', 'XXXL'];
-
-            sizes.forEach(size => {
-                const added = data[size].added;
-                const sold = data[size].sold;
-                const remaining = added - sold;
-
-                const cardHTML = `
-                    <div class="stat-card">
-                        <h3 style="color: ${remaining > 0 ? '#1dd1a1' : '#ff6b6b'}">Size ${size}</h3>
-                        <div class="stat-row">
-                            <span>Total Added:</span>
-                            <span class="stat-value">${added}</span>
+            <!-- 1. Dashboard View (Includes 3D Canvas) -->
+            <div id="view-dashboard" class="view-container dashboard-layout active">
+                <div id="canvas-container"></div>
+                <div id="dashboard-data">
+                    <h2>Dashboard Overview</h2>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <h3>Total Stock Value</h3>
+                            <div class="value" id="kpi-stock-value">₹0</div>
                         </div>
-                        <div class="stat-row">
-                            <span>Total Sold:</span>
-                            <span class="stat-value">${sold}</span>
+                        <div class="kpi-card">
+                            <h3>Today's Stock In</h3>
+                            <div class="value" id="kpi-today-in">0</div>
                         </div>
-                        <div class="stat-row" style="margin-top: 10px; border-top: 1px solid #4a4a5e; padding-top: 5px;">
-                            <span>Remaining:</span>
-                            <span class="stat-value" style="font-size: 1.3em; color: ${remaining > 0 ? '#fff' : '#ff6b6b'}">${remaining}</span>
+                        <div class="kpi-card">
+                            <h3>Today's Stock Out</h3>
+                            <div class="value" id="kpi-today-out">0</div>
+                        </div>
+                        <div class="kpi-card" style="border-top-color: var(--accent-red)">
+                            <h3>Total Pending Receivables</h3>
+                            <div class="value" id="kpi-total-pending">₹0</div>
                         </div>
                     </div>
-                `;
-                container.innerHTML += cardHTML;
-            });
-        }
 
-        // Initial UI load
-        updateUI();
+                    <h3>Low Stock Alerts</h3>
+                    <table id="low-stock-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Available</th>
+                                <th>Min Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
+            <!-- 2. Products Master View -->
+            <div id="view-products" class="view-container">
+                <h2>T-Shirt Master / Product Setup</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <form id="form-product" onsubmit="handleProductSubmit(event)">
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label>Design/Name</label>
+                                <input type="text" id="p_name" required placeholder="e.g. Army T-Shirt">
+                            </div>
+                            <div class="form-group">
+                                <label>Color</label>
+                                <input type="text" id="p_color" required placeholder="e.g. Black">
+                            </div>
+                            <div class="form-group">
+                                <label>Size</label>
+                                <select id="p_size" required>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                    <option value="XXXL">XXXL</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Sleeve Type</label>
+                                <select id="p_sleeve" required>
+                                    <option value="Half">Half Sleeve</option>
+                                    <option value="Full">Full Sleeve</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cost Price (₹)</label>
+                                <input type="number" id="p_cost" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Selling/Issue Price (₹)</label>
+                                <input type="number" id="p_sell" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Opening Stock (Qty)</label>
+                                <input type="number" id="p_open" required min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Min Stock Alert</label>
+                                <input type="number" id="p_min" required min="0" value="10">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%">Add Product</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
-        // --- 2. 3D ANIMATION (Three.js) ---
+                <h3>Product List</h3>
+                <table id="products-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Cost</th>
+                            <th>Price</th>
+                            <th>Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-        const canvasContainer = document.getElementById('canvas-container');
+            <!-- 3. Stock IN View -->
+            <div id="view-stockin" class="view-container">
+                <h2>Stock IN (Add Inventory)</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px;">
+                    <form id="form-in" onsubmit="handleTxSubmit(event, 'IN')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="in_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier Name</label>
+                                <input type="text" id="in_entity" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Product</label>
+                                <select id="in_product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="in_qty" required min="1" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Per Piece Cost (₹)</label>
+                                <input type="number" id="in_rate" required min="0" step="0.01" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="in_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Paid Amount (₹)</label>
+                                <input type="number" id="in_paid" required min="0" value="0" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Pending Amount (₹)</label>
+                                <input type="number" id="in_pending" readonly>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <button type="submit" class="btn btn-primary">Save Stock IN</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-        // Scene setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color('#1e1e24');
+            <!-- 4. Stock OUT View -->
+            <div id="view-stockout" class="view-container">
+                <h2>Stock OUT (Issue to Company/Person)</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px;">
+                    <form id="form-out" onsubmit="handleTxSubmit(event, 'OUT')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="out_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Company/Person Name</label>
+                                <input type="text" id="out_entity" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Product (Shows Available Stock)</label>
+                                <select id="out_product" required onchange="setOutRate()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="out_qty" required min="1" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Per Piece Price (₹)</label>
+                                <input type="number" id="out_rate" required min="0" step="0.01" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="out_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Paid Amount (₹)</label>
+                                <input type="number" id="out_paid" required min="0" value="0" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Pending Amount (₹)</label>
+                                <input type="number" id="out_pending" readonly>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <button type="submit" class="btn btn-success">Issue Stock OUT</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-        const camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
-        camera.position.z = 5;
+            <!-- 5. Ledger / Payments -->
+            <div id="view-ledger" class="view-container">
+                <h2>Company/Customer Ledger</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Filter by Company/Customer</label>
+                        <select id="ledger_filter" onchange="renderLedger()">
+                            <option value="">All Transactions</option>
+                        </select>
+                    </div>
+                </div>
+                <table id="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Entity</th>
+                            <th>Type</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Pending</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-        canvasContainer.appendChild(renderer.domElement);
+            <!-- 6. Reports & PDF -->
+            <div id="view-reports" class="view-container">
+                <h2>Reports & PDF Export</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" id="rep_from">
+                        </div>
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <input type="date" id="rep_to">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                            <button class="btn btn-info" onclick="downloadPDF()">Download as PDF</button>
+                        </div>
+                    </div>
+                </div>
 
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 5, 5);
-        scene.add(dirLight);
+                <div id="report-content" style="background: #fff; color: #000; padding: 20px; border-radius: 8px; display: none;">
+                    <h1 style="text-align:center; color:#d63031; border-bottom:2px solid #d63031;" id="pdf-title">BAZRIO.COM</h1>
+                    <h3 style="text-align:center;">Stock & Inventory Report</h3>
+                    <p style="text-align:center;" id="pdf-dates"></p>
 
-        // Simple T-Shirt Representation (using simple geometries)
-        const tShirtGroup = new THREE.Group();
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 20px; border-top:1px solid #ccc; padding-top:10px;">
+                        <div>
+                            <strong>Total Sales/Issue:</strong> <span id="rep-sales">0</span><br>
+                            <strong>Total Profit:</strong> <span id="rep-profit" style="color:green">0</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong>Total Pending Amount:</strong> <span id="rep-pending" style="color:red">0</span><br>
+                        </div>
+                    </div>
 
-        // Body
-        const bodyGeo = new THREE.BoxGeometry(2, 2.5, 0.5);
-        const clothMat = new THREE.MeshPhongMaterial({ color: 0xff6b6b });
-        const bodyMesh = new THREE.Mesh(bodyGeo, clothMat);
-        tShirtGroup.add(bodyMesh);
+                    <table style="width:100%; border-collapse:collapse; color:#000;" border="1">
+                        <thead>
+                            <tr style="background:#f1f2f6;">
+                                <th style="padding:8px">Date</th>
+                                <th style="padding:8px">Type</th>
+                                <th style="padding:8px">Product</th>
+                                <th style="padding:8px">Qty</th>
+                                <th style="padding:8px">Rate</th>
+                                <th style="padding:8px">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
 
-        // Left Sleeve
-        const sleeveGeo = new THREE.BoxGeometry(0.8, 1, 0.5);
-        const lSleeve = new THREE.Mesh(sleeveGeo, clothMat);
-        lSleeve.position.set(-1.3, 0.5, 0);
-        lSleeve.rotation.z = Math.PI / 6;
-        tShirtGroup.add(lSleeve);
+            <!-- 7. Settings -->
+            <div id="view-settings" class="view-container">
+                <h2>Settings & Backup</h2>
 
-        // Right Sleeve
-        const rSleeve = new THREE.Mesh(sleeveGeo, clothMat);
-        rSleeve.position.set(1.3, 0.5, 0);
-        rSleeve.rotation.z = -Math.PI / 6;
-        tShirtGroup.add(rSleeve);
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3>Data Backup (JSON)</h3>
+                    <p>Since this app uses browser storage (No Database), please backup your data regularly.</p>
+                    <button class="btn btn-success" onclick="db.exportBackup()">Export Backup</button>
 
-        scene.add(tShirtGroup);
+                    <hr style="border-color: var(--border-color); margin: 20px 0;">
 
-        // Animation Loop
-        let bounce = 0;
-        let isAnimating = false;
+                    <h3>Restore Backup</h3>
+                    <input type="file" id="import_file" accept=".json" style="margin-bottom: 10px;">
+                    <button class="btn btn-info" onclick="handleImport()">Import Backup</button>
 
-        function animate() {
-            requestAnimationFrame(animate);
+                    <hr style="border-color: var(--border-color); margin: 20px 0;">
 
-            // Base rotation
-            tShirtGroup.rotation.y += 0.005;
+                    <button class="btn btn-primary" onclick="db.clearAll() && location.reload()" style="background: #e84118">Clear All Data (Factory Reset)</button>
+                </div>
+            </div>
 
-            // Triggered animation (when stock is added/sold)
-            if (isAnimating) {
-                bounce += 0.2;
-                tShirtGroup.position.y = Math.sin(bounce) * 0.5;
-                if (bounce > Math.PI * 2) {
-                    bounce = 0;
-                    isAnimating = false;
-                    tShirtGroup.position.y = 0;
-                }
-            }
+        </main>
+    </div>
 
-            // Make it float slightly
-            if(!isAnimating){
-               tShirtGroup.position.y = Math.sin(Date.now() * 0.002) * 0.1;
-            }
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Handle Window Resize
-        window.addEventListener('resize', () => {
-            camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-        });
-
-        // Trigger animation function called by stock functions
-        function animateTshirt() {
-            isAnimating = true;
-            // Change color randomly slightly to show activity
-            const colors = [0xff6b6b, 0x1dd1a1, 0x5f27cd, 0x54a0ff];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            tShirtGroup.children.forEach(child => {
-                child.material.color.setHex(randomColor);
-            });
-        }
-    </script>
+    <!-- Application Logic -->
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
