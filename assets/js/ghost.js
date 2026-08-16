@@ -1,0 +1,1 @@
+(()=>{const b=document.getElementById('theme');if(!b)return;let d=localStorage.getItem('ghost-theme')==='dark';document.body.classList.toggle('dark',d);b.onclick=()=>{d=!d;document.body.classList.toggle('dark',d);localStorage.setItem('ghost-theme',d?'dark':'light')}})();

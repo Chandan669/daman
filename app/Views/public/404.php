@@ -1,0 +1,1 @@
+<?php ob_start(); ?><section class="empty"><h1>Page not found</h1><p>The requested page could not be found.</p><a class="button" href="<?=url()?>">Back home</a></section><?php $content=ob_get_clean();require GHOST_ROOT.'/app/Views/public/layout.php'; ?>
