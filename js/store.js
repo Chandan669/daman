@@ -26,6 +26,26 @@ class Store {
         if (!data) {
             this.saveAll(defaultDB);
         }
+        this.runAutoBackup();
+    }
+
+    runAutoBackup() {
+        const data = localStorage.getItem(STORE_KEY);
+        if (!data) return;
+
+        const today = new Date().toISOString().slice(0, 10);
+        const lastBackupDate = localStorage.getItem('bazrio_last_backup_date');
+
+        if (lastBackupDate !== today) {
+            // Keep up to 7 days of backups
+            for (let i = 6; i >= 1; i--) {
+                const prev = localStorage.getItem(`bazrio_backup_${i}`);
+                if (prev) localStorage.setItem(`bazrio_backup_${i+1}`, prev);
+            }
+            localStorage.setItem('bazrio_backup_1', data);
+            localStorage.setItem('bazrio_last_backup_date', today);
+            console.log('Daily auto-backup created.');
+        }
     }
 
     getAll() {

@@ -121,6 +121,8 @@ function updateSelectors() {
     const inSelect = document.getElementById('in_product');
     const outSelect = document.getElementById('out_product');
 
+    const soSelect = document.getElementById('so_product');
+
     if(inSelect && outSelect) {
         let options = '<option value="">-- Select Product --</option>';
         products.forEach(p => {
@@ -132,6 +134,7 @@ function updateSelectors() {
         });
         inSelect.innerHTML = options;
         outSelect.innerHTML = options;
+        if(soSelect) soSelect.innerHTML = options;
     }
 }
 
@@ -195,7 +198,8 @@ function handleTxSubmit(e, type) {
         rate: parseFloat(document.getElementById(`${prefix}_rate`).value),
         total: parseFloat(document.getElementById(`${prefix}_total`).value),
         paid: parseFloat(document.getElementById(`${prefix}_paid`).value),
-        pending: parseFloat(document.getElementById(`${prefix}_pending`).value)
+        pending: parseFloat(document.getElementById(`${prefix}_pending`).value),
+        paymentMode: document.getElementById(`${prefix}_paymentMode`).value || 'Cash'
     };
 
     if (txId) {
@@ -233,6 +237,7 @@ function editTransaction(id) {
     document.getElementById(`${prefix}_total`).value = t.total;
     document.getElementById(`${prefix}_paid`).value = t.paid;
     document.getElementById(`${prefix}_pending`).value = t.pending;
+    document.getElementById(`${prefix}_paymentMode`).value = t.paymentMode || 'Cash';
 
     document.getElementById(`btn_save_${prefix}`).textContent = `Update Stock ${t.type}`;
     document.getElementById(`btn_cancel_${prefix}`).style.display = "inline-block";
@@ -336,6 +341,7 @@ function renderLedger() {
             <td>${formatCurrency(t.total)}</td>
             <td>${formatCurrency(t.paid)}</td>
             <td style="color: ${t.pending > 0 ? 'var(--accent-red)' : 'var(--text-main)'}">${formatCurrency(t.pending)}</td>
+            <td>${escapeHTML(t.paymentMode || 'Cash')}</td>
             <td>
                 <button onclick="editTransaction('${t.id}')" class="btn btn-info" style="padding: 5px 10px; font-size: 0.8em; margin-right: 5px;">Edit</button>
                 <button onclick="deleteTransaction('${t.id}')" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;">Del</button>
@@ -377,6 +383,7 @@ function generateReport() {
         const tr = document.createElement('tr');
         const safeName = escapeHTML(p.name);
         const safeColor = escapeHTML(p.color);
+        const safeMode = escapeHTML(t.paymentMode || 'Cash');
         tr.innerHTML = `
             <td style="padding:8px; border:1px solid #ccc;">${formatDate(t.date)}</td>
             <td style="padding:8px; border:1px solid #ccc;">${t.type}</td>
@@ -384,9 +391,40 @@ function generateReport() {
             <td style="padding:8px; border:1px solid #ccc;">${t.qty}</td>
             <td style="padding:8px; border:1px solid #ccc;">${formatCurrency(t.rate)}</td>
             <td style="padding:8px; border:1px solid #ccc;">${formatCurrency(t.total)}</td>
+            <td style="padding:8px; border:1px solid #ccc;">${safeMode}</td>
         `;
         tbody.appendChild(tr);
     });
+
+    // Generate Stock Summary
+    let summaryHtml = '<ul style="list-style-type:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap: 20px;">';
+    const products = db.getProducts();
+    products.forEach(p => {
+        let sold = 0;
+        let stock = parseFloat(p.openingStock) || 0;
+
+        // Calculate based on all history up to the 'toDate'
+        const allTxs = db.getTransactions().filter(t => t.productId === p.id);
+        allTxs.forEach(t => {
+            if(!toDate || t.date <= toDate) {
+                if (t.type === 'IN') stock += t.qty;
+                if (t.type === 'OUT') {
+                    stock -= t.qty;
+                    if (!fromDate || t.date >= fromDate) {
+                        sold += t.qty;
+                    }
+                }
+            }
+        });
+
+        summaryHtml += `<li style="background:#f1f2f6; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+            <strong>${escapeHTML(p.name)} (${p.size})</strong><br>
+            Sold in period: ${sold}<br>
+            Remaining Stock: <span style="color:${stock <= p.minStock ? 'red' : 'green'}">${stock}</span>
+        </li>`;
+    });
+    summaryHtml += '</ul>';
+    document.getElementById('report-stock-summary').innerHTML = summaryHtml;
 
     document.getElementById('rep-sales').textContent = formatCurrency(sales);
     document.getElementById('rep-profit').textContent = formatCurrency(profit);
@@ -419,6 +457,65 @@ function downloadPDF() {
     html2pdf().set(opt).from(element).save();
 }
 
+// --- 7. SUPPLY ORDER ---
+function calcSupplyTotal() {
+    const qty = parseFloat(document.getElementById('so_qty').value) || 0;
+    const rate = parseFloat(document.getElementById('so_rate').value) || 0;
+    document.getElementById('so_total').value = (qty * rate).toFixed(2);
+}
+
+document.getElementById('so_product')?.addEventListener('change', (e) => {
+    const p = db.getProductById(e.target.value);
+    if(p) {
+        document.getElementById('so_rate').value = p.costPrice;
+        calcSupplyTotal();
+    }
+});
+
+function generateSupplyOrderPDF(e) {
+    e.preventDefault();
+
+    const pid = document.getElementById('so_product').value;
+    const p = db.getProductById(pid);
+    if(!p) {
+        showAlert('Please select a product', 'warning');
+        return;
+    }
+
+    // Populate Hidden PDF Template
+    document.getElementById('pdf_so_company').textContent = document.getElementById('so_my_company').value;
+    document.getElementById('pdf_so_supplier').textContent = document.getElementById('so_supplier').value;
+    document.getElementById('pdf_so_date').textContent = formatDate(document.getElementById('so_date').value);
+    document.getElementById('pdf_so_delivery').textContent = formatDate(document.getElementById('so_delivery').value);
+
+    const pDesc = `${p.name} - ${p.color} (Size: ${p.size}, ${p.sleeve})`;
+    document.getElementById('pdf_so_pname').textContent = pDesc;
+    document.getElementById('pdf_so_pcode').textContent = document.getElementById('so_code').value || 'N/A';
+
+    document.getElementById('pdf_so_pqty').textContent = document.getElementById('so_qty').value;
+    document.getElementById('pdf_so_prate').textContent = formatCurrency(document.getElementById('so_rate').value);
+    document.getElementById('pdf_so_ptotal').textContent = formatCurrency(document.getElementById('so_total').value);
+
+    document.getElementById('pdf_so_pterms').textContent = document.getElementById('so_payment_terms').value || 'Standard';
+
+    const element = document.getElementById('supply-order-pdf');
+    element.style.display = 'block'; // Temporarily show for html2pdf rendering
+
+    const opt = {
+      margin:       0.5,
+      filename:     `Supply_Order_${document.getElementById('so_supplier').value}_${new Date().toISOString().slice(0,10)}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.style.display = 'none'; // Hide again after generating
+        showAlert('Supply Order PDF generated successfully!');
+    });
+}
+
+
 function handleImport() {
     const file = document.getElementById('import_file').files[0];
     if(!file) {
@@ -439,7 +536,7 @@ function handleImport() {
     reader.readAsText(file);
 }
 
-// --- 7. INITIALIZATION & 3D ---
+// --- 8. INITIALIZATION & 3D ---
 function refreshData() {
     renderProducts();
     updateSelectors();

@@ -24,6 +24,7 @@
                 <li><a href="#" onclick="showView('stockin')" id="nav-stockin">Stock IN</a></li>
                 <li><a href="#" onclick="showView('stockout')" id="nav-stockout">Stock OUT (Issue)</a></li>
                 <li><a href="#" onclick="showView('ledger')" id="nav-ledger">Ledger / Payments</a></li>
+                <li><a href="#" onclick="showView('supply')" id="nav-supply">Supply Order (PDF)</a></li>
                 <li><a href="#" onclick="showView('reports')" id="nav-reports">Reports & PDF</a></li>
                 <li><a href="#" onclick="showView('settings')" id="nav-settings">Settings & Backup</a></li>
             </ul>
@@ -182,6 +183,16 @@
                                 <label>Pending Amount (₹)</label>
                                 <input type="number" id="in_pending" readonly>
                             </div>
+                            <div class="form-group">
+                                <label>Payment Mode</label>
+                                <select id="in_paymentMode">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit (Udhar)</option>
+                                </select>
+                            </div>
                             <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
                                 <input type="hidden" id="in_id">
                                 <button type="submit" class="btn btn-primary" id="btn_save_in">Save Stock IN</button>
@@ -230,6 +241,16 @@
                                 <label>Pending Amount (₹)</label>
                                 <input type="number" id="out_pending" readonly>
                             </div>
+                            <div class="form-group">
+                                <label>Payment Mode</label>
+                                <select id="out_paymentMode">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit (Udhar)</option>
+                                </select>
+                            </div>
                             <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
                                 <input type="hidden" id="out_id">
                                 <button type="submit" class="btn btn-success" id="btn_save_out">Issue Stock OUT</button>
@@ -262,11 +283,123 @@
                             <th>Total</th>
                             <th>Paid</th>
                             <th>Pending</th>
+                            <th>Pay Mode</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
+            </div>
+
+            <!-- Supply Order Module -->
+            <div id="view-supply" class="view-container">
+                <h2>Create Supply Order</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <form id="form-supply" onsubmit="generateSupplyOrderPDF(event)">
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <h3>Company Details</h3>
+                            </div>
+                            <div class="form-group">
+                                <label>Your Company Name</label>
+                                <input type="text" id="so_my_company" required value="BAZRIO.COM">
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier / Vendor Name</label>
+                                <input type="text" id="so_supplier" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Order Date</label>
+                                <input type="date" id="so_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Expected Delivery Date</label>
+                                <input type="date" id="so_delivery" required>
+                            </div>
+
+                            <div class="form-group" style="grid-column: span 2;">
+                                <h3>Product Details</h3>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Select Product (Shows Current Stock)</label>
+                                <select id="so_product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier T-Shirt Code (Optional)</label>
+                                <input type="text" id="so_code" placeholder="e.g. ARMY-TS-01">
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity Required</label>
+                                <input type="number" id="so_qty" required min="1" onchange="calcSupplyTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Rate (₹)</label>
+                                <input type="number" id="so_rate" required min="0" step="0.01" onchange="calcSupplyTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="so_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Structure / Terms</label>
+                                <input type="text" id="so_payment_terms" placeholder="e.g. 50% Advance, 50% on Delivery">
+                            </div>
+
+                            <div class="form-group" style="grid-column: span 2; margin-top: 10px;">
+                                <button type="submit" class="btn btn-primary">Generate Supply Order PDF</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Hidden PDF Template for Supply Order -->
+                <div id="supply-order-pdf" style="background: #fff; color: #000; padding: 40px; border-radius: 8px; display: none;">
+                    <div style="text-align: center; border-bottom: 2px solid #222; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h1 id="pdf_so_company" style="margin: 0; color: #d63031;">BAZRIO.COM</h1>
+                        <h2 style="margin: 5px 0 0 0; color: #555;">PURCHASE / SUPPLY ORDER</h2>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                        <div>
+                            <strong>To (Supplier):</strong> <span id="pdf_so_supplier"></span><br>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>Order Date:</strong> <span id="pdf_so_date"></span><br>
+                            <strong>Delivery Date:</strong> <span id="pdf_so_delivery"></span>
+                        </div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; color:#000; margin-bottom: 30px;" border="1">
+                        <thead>
+                            <tr style="background:#f1f2f6;">
+                                <th style="padding:10px; text-align:left;">Product Description</th>
+                                <th style="padding:10px; text-align:left;">Supplier Code</th>
+                                <th style="padding:10px; text-align:center;">Quantity</th>
+                                <th style="padding:10px; text-align:right;">Rate (₹)</th>
+                                <th style="padding:10px; text-align:right;">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:10px;" id="pdf_so_pname"></td>
+                                <td style="padding:10px;" id="pdf_so_pcode"></td>
+                                <td style="padding:10px; text-align:center;" id="pdf_so_pqty"></td>
+                                <td style="padding:10px; text-align:right;" id="pdf_so_prate"></td>
+                                <td style="padding:10px; text-align:right; font-weight:bold;" id="pdf_so_ptotal"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="border-top: 1px solid #ccc; padding-top: 15px;">
+                        <strong>Payment Terms:</strong> <span id="pdf_so_pterms"></span>
+                    </div>
+
+                    <div style="margin-top: 60px; display: flex; justify-content: space-between;">
+                        <div style="border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px;">Authorized Signature</div>
+                        <div style="border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px;">Supplier Acceptance</div>
+                    </div>
+                </div>
             </div>
 
             <!-- 6. Reports & PDF -->
@@ -313,10 +446,18 @@
                                 <th style="padding:8px">Qty</th>
                                 <th style="padding:8px">Rate</th>
                                 <th style="padding:8px">Total</th>
+                                <th style="padding:8px">Pay Mode</th>
                             </tr>
                         </thead>
                         <tbody id="report-table-body"></tbody>
                     </table>
+
+                    <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+                        <h4>Stock Summary (As of Report Date)</h4>
+                        <div id="report-stock-summary">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
