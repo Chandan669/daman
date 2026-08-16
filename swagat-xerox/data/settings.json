@@ -1,0 +1,9 @@
+{
+    "company_name": "SWAGAT XEROX CENTER",
+    "company_subtitle": "XEROX \u2022 PRINT \u2022 COPY \u2022 SCAN \u2022 BINDING",
+    "admin_password": "$2y$10$WUGqM.kktEdm9aMf73zjxunbSTJm5O7vQIALrYg2RxXl\/WEEV2Fgu",
+    "memo_counter": 1,
+    "default_payment_method": "Cash",
+    "default_item_rows": 5,
+    "default_print_layout": 4
+}
