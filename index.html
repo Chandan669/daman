@@ -81,7 +81,7 @@
         }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
         }
         .stat-card {
@@ -138,6 +138,7 @@
                     <option value="M">Medium (M)</option>
                     <option value="L">Large (L)</option>
                     <option value="XL">Extra Large (XL)</option>
+                    <option value="XXXL">Extra Extra Extra Large (XXXL)</option>
                 </select>
                 <label for="add-qty">Quantity:</label>
                 <input type="number" id="add-qty" min="1" value="1">
@@ -152,6 +153,7 @@
                     <option value="M">Medium (M)</option>
                     <option value="L">Large (L)</option>
                     <option value="XL">Extra Large (XL)</option>
+                    <option value="XXXL">Extra Extra Extra Large (XXXL)</option>
                 </select>
                 <label for="sell-qty">Quantity:</label>
                 <input type="number" id="sell-qty" min="1" value="1">
@@ -173,7 +175,8 @@
             S: { added: 0, sold: 0 },
             M: { added: 0, sold: 0 },
             L: { added: 0, sold: 0 },
-            XL: { added: 0, sold: 0 }
+            XL: { added: 0, sold: 0 },
+            XXXL: { added: 0, sold: 0 }
         };
 
         function getStockData() {
@@ -237,7 +240,7 @@
             const container = document.getElementById('stats-container');
             container.innerHTML = '';
 
-            const sizes = ['S', 'M', 'L', 'XL'];
+            const sizes = ['S', 'M', 'L', 'XL', 'XXXL'];
 
             sizes.forEach(size => {
                 const added = data[size].added;
