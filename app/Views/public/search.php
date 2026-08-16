@@ -1,0 +1,1 @@
+<?php ob_start(); ?><div class="section-head"><h1>Search: <?=e($q)?></h1></div><div class="grid"><?php foreach($posts as $p): ?><article class="card"><h3><a href="<?=url('article/'.$p['slug'])?>"><?=e($p['title'])?></a></h3><p><?=e(excerpt($p['content']))?></p></article><?php endforeach; ?></div><?php $content=ob_get_clean();require GHOST_ROOT.'/app/Views/public/layout.php'; ?>

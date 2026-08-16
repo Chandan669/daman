@@ -1,6 +1,24 @@
-# nodejs
-A minimal Node.js web application.
+# Ghost News & Magazine
 
-For a step-by-step guide to deploying on [Railway](https://railway.app/?referralCode=alphasec), see [this](https://alphasec.io/how-to-deploy-a-nodejs-app-on-railway/) post, or click the button below.
+A CodeCanyon-oriented, PHP 8.2+/MySQL news and magazine CMS.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Abo1zu?referralCode=alphasec)
+Highlights:
+- Mobile-first editorial UI
+- Admin dashboard
+- Posts, categories, search
+- Draft/publish workflow
+- SEO meta basics
+- Canonical URLs
+- XML sitemap
+- RSS feed
+- JSON-LD NewsMediaOrganization
+- PWA manifest
+- Dark mode
+- CSRF protection
+- Password hashing
+- PDO prepared statements
+- Rate-limit-ready architecture
+- Server-side CodeCanyon purchase verification through an author-controlled license server
+- Installer self-removal after successful installation
+
+This package is an original implementation and is not a copy of any third-party script.
