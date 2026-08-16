@@ -4,23 +4,11 @@
  */
 
 // --- 1. UI NAVIGATION ---
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('open');
-}
-
 function showView(viewId) {
     document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('nav-' + viewId).classList.add('active');
-
-    // Close mobile sidebar if open
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('open');
-
     refreshData();
 }
 
@@ -226,9 +214,6 @@ function handleTxSubmit(e, type) {
     }
 
     updateSelectors(); // Update stock counts in dropdowns
-
-    // trigger 3d animation if on dashboard (will be handled by refreshData if integrated)
-    if(typeof animateTshirt === 'function') animateTshirt();
 }
 
 function editTransaction(id) {
@@ -548,88 +533,12 @@ function handleImport() {
     reader.readAsText(file);
 }
 
-// --- 8. INITIALIZATION & 3D ---
+// --- 8. INITIALIZATION ---
 function refreshData() {
     renderProducts();
     updateSelectors();
     renderDashboard();
     renderLedger();
-}
-
-// 3D Canvas Logic (Preserved and adapted from previous version)
-const canvasContainer = document.getElementById('canvas-container');
-if(canvasContainer) {
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#1e1e24');
-
-    const camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
-    camera.position.z = 5;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-    canvasContainer.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5, 5, 5);
-    scene.add(dirLight);
-
-    const tShirtGroup = new THREE.Group();
-    const clothMat = new THREE.MeshPhongMaterial({ color: 0xff6b6b });
-
-    const bodyGeo = new THREE.BoxGeometry(2, 2.5, 0.5);
-    const bodyMesh = new THREE.Mesh(bodyGeo, clothMat);
-    tShirtGroup.add(bodyMesh);
-
-    const sleeveGeo = new THREE.BoxGeometry(0.8, 1, 0.5);
-    const lSleeve = new THREE.Mesh(sleeveGeo, clothMat);
-    lSleeve.position.set(-1.3, 0.5, 0);
-    lSleeve.rotation.z = Math.PI / 6;
-    tShirtGroup.add(lSleeve);
-
-    const rSleeve = new THREE.Mesh(sleeveGeo, clothMat);
-    rSleeve.position.set(1.3, 0.5, 0);
-    rSleeve.rotation.z = -Math.PI / 6;
-    tShirtGroup.add(rSleeve);
-
-    scene.add(tShirtGroup);
-
-    let bounce = 0;
-    let isAnimating = false;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        tShirtGroup.rotation.y += 0.005;
-        if (isAnimating) {
-            bounce += 0.2;
-            tShirtGroup.position.y = Math.sin(bounce) * 0.5;
-            if (bounce > Math.PI * 2) {
-                bounce = 0;
-                isAnimating = false;
-                tShirtGroup.position.y = 0;
-            }
-        } else {
-            tShirtGroup.position.y = Math.sin(Date.now() * 0.002) * 0.1;
-        }
-        renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener('resize', () => {
-        camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-    });
-
-    window.animateTshirt = function() {
-        isAnimating = true;
-        const colors = [0xff6b6b, 0x1dd1a1, 0x5f27cd, 0x54a0ff, 0xfeca57];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        tShirtGroup.children.forEach(child => {
-            child.material.color.setHex(randomColor);
-        });
-    };
 }
 
 // Init call

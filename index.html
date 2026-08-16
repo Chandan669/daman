@@ -5,44 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BAZRIO Stock Manager</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Include Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Include html2pdf for Reports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
     <div id="alert-container"></div>
-    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <div id="app-container">
-        <!-- Mobile Header -->
-        <header id="mobile-header">
-            <span style="font-weight: bold; color: var(--accent-red); font-size: 1.2em;">BAZRIO.COM</span>
-            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <!-- Top Fixed Scrollable Navigation -->
+        <header id="top-nav">
+            <div class="nav-brand">BAZRIO.COM</div>
+            <div class="scrollable-tabs">
+                <a href="#" onclick="showView('dashboard')" class="nav-tab active" id="nav-dashboard">📊 Dashboard</a>
+                <a href="#" onclick="showView('products')" class="nav-tab" id="nav-products">📦 Stock Master</a>
+                <a href="#" onclick="showView('stockin')" class="nav-tab" id="nav-stockin">➕ Stock In</a>
+                <a href="#" onclick="showView('stockout')" class="nav-tab" id="nav-stockout">➖ Stock Out</a>
+                <a href="#" onclick="showView('ledger')" class="nav-tab" id="nav-ledger">🏢 Ledger</a>
+                <a href="#" onclick="showView('supply')" class="nav-tab" id="nav-supply">📄 Supply Order</a>
+                <a href="#" onclick="showView('reports')" class="nav-tab" id="nav-reports">📈 Reports</a>
+                <a href="#" onclick="showView('settings')" class="nav-tab" id="nav-settings">⚙️ Settings</a>
+            </div>
         </header>
-
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar">
-            <div class="brand">BAZRIO.COM</div>
-            <ul class="nav-links">
-                <li><a href="#" onclick="showView('dashboard')" class="active" id="nav-dashboard">Dashboard</a></li>
-                <li><a href="#" onclick="showView('products')" id="nav-products">Products Master</a></li>
-                <li><a href="#" onclick="showView('stockin')" id="nav-stockin">Stock IN</a></li>
-                <li><a href="#" onclick="showView('stockout')" id="nav-stockout">Stock OUT (Issue)</a></li>
-                <li><a href="#" onclick="showView('ledger')" id="nav-ledger">Ledger / Payments</a></li>
-                <li><a href="#" onclick="showView('supply')" id="nav-supply">Supply Order (PDF)</a></li>
-                <li><a href="#" onclick="showView('reports')" id="nav-reports">Reports & PDF</a></li>
-                <li><a href="#" onclick="showView('settings')" id="nav-settings">Settings & Backup</a></li>
-            </ul>
-        </nav>
 
         <!-- Main Content Area -->
         <main id="main-content">
 
-            <!-- 1. Dashboard View (Includes 3D Canvas) -->
-            <div id="view-dashboard" class="view-container dashboard-layout active">
-                <div id="canvas-container"></div>
+            <!-- 1. Dashboard View -->
+            <div id="view-dashboard" class="view-container active">
                 <div id="dashboard-data">
                     <h2>Dashboard Overview</h2>
                     <div class="kpi-grid">

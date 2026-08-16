@@ -25,32 +25,6 @@ body {
     overflow: hidden;
 }
 
-/* Mobile Header */
-#mobile-header {
-    display: none;
-    background: var(--bg-sidebar);
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color);
-    align-items: center;
-    justify-content: space-between;
-}
-.menu-btn {
-    background: none;
-    border: none;
-    color: var(--text-main);
-    font-size: 1.5em;
-    cursor: pointer;
-}
-
-/* Sidebar Overlay */
-#sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-}
-
 /* Layout */
 #app-container {
     display: flex;
@@ -59,17 +33,17 @@ body {
     flex-direction: column;
 }
 
-/* Sidebar */
-#sidebar {
-    width: 250px;
+/* Top Scrollable Navigation */
+#top-nav {
     background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border-color);
+    z-index: 1000;
 }
 
-.brand {
-    padding: 20px;
+.nav-brand {
+    padding: 15px 20px;
     font-size: 1.5em;
     font-weight: bold;
     color: var(--accent-red);
@@ -77,27 +51,40 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.nav-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-    overflow-y: auto;
+.scrollable-tabs {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+.scrollable-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+.scrollable-tabs::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
 }
 
-.nav-links li a {
-    display: block;
+.nav-tab {
+    display: inline-block;
     padding: 15px 20px;
     color: var(--text-main);
     text-decoration: none;
-    border-bottom: 1px solid var(--border-color);
-    transition: background 0.2s;
+    border-bottom: 3px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
     cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
 }
 
-.nav-links li a:hover, .nav-links li a.active {
+.nav-tab:hover {
     background: var(--bg-card);
-    border-left: 4px solid var(--accent-red);
+}
+
+.nav-tab.active {
+    background: var(--bg-card);
+    border-bottom: 3px solid var(--accent-red);
+    color: var(--accent-red);
 }
 
 /* Main Content Area */
@@ -107,6 +94,7 @@ body {
     flex-direction: column;
     overflow-y: auto;
     position: relative;
+    padding-bottom: 40px; /* Give some breathing room at the bottom */
 }
 
 .table-responsive {
@@ -114,57 +102,34 @@ body {
     width: 100%;
 }
 
-/* Dashboard specific: Split with 3D canvas */
-.dashboard-layout {
-    display: flex;
-    height: 100%;
-}
-#canvas-container {
-    flex: 1;
-    position: relative;
-    border-right: 1px solid var(--border-color);
-}
-#dashboard-data {
-    flex: 1.5;
-    padding: 20px;
-    overflow-y: auto;
-}
-
 /* Generic View Container */
 .view-container {
     display: none;
     padding: 20px;
-    height: 100%;
     box-sizing: border-box;
-    overflow-y: auto;
 }
 .view-container.active {
     display: block;
 }
-.dashboard-layout.view-container {
-    display: none;
-}
-.dashboard-layout.view-container.active {
-    display: flex;
-}
 
 /* Forms & Inputs */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 label {
     display: block;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    margin-bottom: 8px;
+    font-size: 0.95em;
     color: var(--text-muted);
 }
 input, select, textarea {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
+    font-size: 1em;
     background-color: var(--bg-input);
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
     box-sizing: border-box;
 }
 input:focus, select:focus {
@@ -172,13 +137,15 @@ input:focus, select:focus {
     border-color: var(--accent-blue);
 }
 .btn {
-    padding: 10px 15px;
+    padding: 12px 20px;
+    font-size: 1em;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     color: white;
     transition: background 0.2s;
+    text-transform: uppercase;
 }
 .btn-primary { background: var(--accent-red); }
 .btn-primary:hover { background: var(--accent-red-hover); }
@@ -259,43 +226,17 @@ tr:hover {
 
 /* Responsive Breakpoints */
 @media (min-width: 769px) {
-    #app-container {
-        flex-direction: row;
+    /* Optionally limit max width on large screens to make forms readable */
+    #main-content {
+        align-items: center;
+    }
+    .view-container {
+        width: 100%;
+        max-width: 1200px;
     }
 }
 
 @media (max-width: 768px) {
-    #mobile-header {
-        display: flex;
-    }
-
-    #sidebar {
-        position: fixed;
-        top: 0;
-        left: -250px;
-        height: 100vh;
-        z-index: 1001;
-        transition: left 0.3s ease;
-    }
-
-    #sidebar.open {
-        left: 0;
-    }
-
-    #sidebar-overlay.open {
-        display: block;
-    }
-
-    .dashboard-layout {
-        flex-direction: column;
-    }
-
-    #canvas-container {
-        min-height: 250px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
     .form-grid, .form-grid-3 {
         grid-template-columns: 1fr;
     }
@@ -306,7 +247,7 @@ tr:hover {
 
     .btn {
         width: 100%;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
 
     /* Make actions flex wrap nicely */
