@@ -4,11 +4,23 @@
  */
 
 // --- 1. UI NAVIGATION ---
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+}
+
 function showView(viewId) {
     document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('nav-' + viewId).classList.add('active');
+
+    // Close mobile sidebar if open
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+
     refreshData();
 }
 
