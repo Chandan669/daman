@@ -2,6 +2,7 @@
 require_once '../includes/config.php';
 require_once '../includes/auth.php';
 require_login();
+verify_csrf();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die("Invalid request");
@@ -67,7 +68,7 @@ $memo_data = [
 
 if (file_put_contents($file_path, json_encode($memo_data, JSON_PRETTY_PRINT))) {
     if (isset($_POST['action']) && $_POST['action'] === 'print') {
-        header("Location: ../print.php?id=" . urlencode($memo_no));
+        header("Location: ../export.php?id[]=" . urlencode($memo_no));
     } else {
         header("Location: ../index.php");
     }

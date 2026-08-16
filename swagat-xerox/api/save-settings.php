@@ -2,6 +2,7 @@
 require_once '../includes/config.php';
 require_once '../includes/auth.php';
 require_login();
+verify_csrf();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die("Invalid request");
@@ -12,7 +13,10 @@ $new_settings = [
     'company_subtitle' => trim($_POST['company_subtitle'] ?? get_setting('company_subtitle')),
     'default_payment_method' => $_POST['default_payment_method'] ?? 'Cash',
     'default_item_rows' => (int)($_POST['default_item_rows'] ?? 5),
-    'default_print_layout' => (int)($_POST['default_print_layout'] ?? 4)
+        'default_print_layout' => (int)($_POST['default_print_layout'] ?? 4),
+    'logo_alignment' => $_POST['logo_alignment'] ?? 'Right',
+    'signature_alignment' => $_POST['signature_alignment'] ?? 'Right',
+    'signature_width' => (int)($_POST['signature_width'] ?? 120)
 ];
 
 if (!empty($_POST["new_password"])) {

@@ -20,7 +20,10 @@ $settings = [
     'memo_counter' => 0,
     'default_payment_method' => 'Cash',
     'default_item_rows' => 5,
-    'default_print_layout' => 4
+        'default_print_layout' => 4,
+    'logo_alignment' => 'Right',
+    'signature_alignment' => 'Right',
+    'signature_width' => 120
 ];
 
 if (file_exists(SETTINGS_FILE)) {

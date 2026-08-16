@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
-require_login(); // Commented out for easier testing initially
+require_login();
 
 $memos = [];
 $total_memos = 0;
@@ -22,7 +22,6 @@ foreach (glob(MEMOS_DIR . '/*.json') as $file) {
         }
 
         $match = true;
-
         if ($search_query) {
             $q = strtolower($search_query);
             $match = (
@@ -35,28 +34,24 @@ foreach (glob(MEMOS_DIR . '/*.json') as $file) {
         if ($match && $from_date && isset($memo['date']) && $memo['date'] < $from_date) {
             $match = false;
         }
-
         if ($match && $to_date && isset($memo['date']) && $memo['date'] > $to_date) {
             $match = false;
         }
-
         if ($match) {
             $memos[] = $memo;
         }
     }
 }
 
-// Sort by memo_no descending (newest first)
 usort($memos, function($a, $b) {
     return strcmp($b['memo_no'], $a['memo_no']);
 });
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - SWAGAT XEROX CENTER</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -68,15 +63,11 @@ usort($memos, function($a, $b) {
             <a href="create-memo.php">New Memo</a>
             <a href="print-blank.php">Blank Memo</a>
             <a href="settings.php">Settings</a>
-            <?php if (is_logged_in()): ?>
-                <a href="logout.php">Logout</a>
-            <?php else: ?>
-                <a href="login.php">Login</a>
-            <?php endif; ?>
+            <a href="logout.php">Logout</a>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container pb-80">
         <div class="dashboard-stats">
             <div class="stat-card">
                 <h3>Total Memos</h3>
@@ -86,63 +77,117 @@ usort($memos, function($a, $b) {
                 <h3>Today's Memos</h3>
                 <div class="stat-value"><?php echo $today_memos; ?></div>
             </div>
-            <div class="stat-card">
-                <h3>Quick Action</h3>
-                <a href="create-memo.php" class="btn btn-primary" style="margin-top:10px; display:inline-block;">+ Create New Memo</a>
-            </div>
+            <a href="create-memo.php" class="btn btn-primary text-center w-100 mt-10" style="padding:15px; font-size:1.2rem; font-weight:bold;">+ New Memo</a>
         </div>
 
-        <div class="search-section card">
+        <div class="card">
             <form method="GET" action="index.php" class="search-form">
-                <input type="text" name="search" placeholder="Search by Memo No, Name, Mobile" value="<?php echo htmlspecialchars($search_query); ?>">
-                <input type="date" name="from_date" title="From Date" value="<?php echo htmlspecialchars($from_date); ?>">
-                <input type="date" name="to_date" title="To Date" value="<?php echo htmlspecialchars($to_date); ?>">
-                <button type="submit" class="btn btn-secondary">Search</button>
-                <a href="index.php" class="btn">Clear</a>
+                <input type="text" name="search" placeholder="Search Memo No, Name, Mobile" value="<?php echo htmlspecialchars($search_query); ?>">
+                <div class="form-row" style="flex-direction:row; gap:10px;">
+                    <input type="date" name="from_date" title="From Date" value="<?php echo htmlspecialchars($from_date); ?>" style="flex:1;">
+                    <input type="date" name="to_date" title="To Date" value="<?php echo htmlspecialchars($to_date); ?>" style="flex:1;">
+                </div>
+                <button type="submit" class="btn btn-secondary w-100">Search</button>
+                <?php if($search_query): ?>
+                    <a href="index.php" class="btn btn-danger w-100 text-center">Clear</a>
+                <?php endif; ?>
             </form>
         </div>
 
-        <div class="memos-list card">
-            <h2>Recent Memos</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Memo No.</th>
-                            <th>Date</th>
-                            <th>Customer</th>
-                            <th>Total (₹)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($memos)): ?>
-                        <tr><td colspan="6" style="text-align:center;">No memos found.</td></tr>
-                        <?php else: ?>
-                            <?php foreach ($memos as $m): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($m['memo_no']); ?></td>
-                                <td><?php echo htmlspecialchars($m['date'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($m['customer_name'] ?? ''); ?></td>
-                                <td>₹<?php echo number_format($m['total'] ?? 0, 2); ?></td>
-                                <td><span class="badge paid">PAID</span></td>
-                                <td class="actions">
-                                    <a href="edit-memo.php?id=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-secondary">Edit</a>
-                                    <a href="print.php?id=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-primary">Print</a>
-                                    <a href="duplicate-memo.php?id=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-secondary">Duplicate</a>
-                                    <form method="POST" action="api/delete-memo.php" onsubmit="return confirm('Are you sure you want to delete this memo?');" style="display:inline;">
-                                        <input type="hidden" name="memo_no" value="<?php echo htmlspecialchars($m['memo_no']); ?>">
-                                        <button type="submit" class="btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <div class="card" style="padding:10px;">
+            <div class="flex-row mb-10" style="justify-content:space-between; padding:0 5px;">
+                <h2 style="margin:0; font-size:1.2rem;">Recent Memos</h2>
+                <div>
+                    <button type="button" class="btn-sm btn-secondary" onclick="toggleSelectAll()">Select All</button>
+                    <button type="button" class="btn-sm btn-secondary" onclick="clearSelection()">Clear</button>
+                </div>
             </div>
+
+            <form id="bulkActionForm" method="GET" action="export.php">
+                <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
+                <div class="memo-list">
+                    <?php if (empty($memos)): ?>
+                        <div class="text-center" style="padding:20px;">No memos found.</div>
+                    <?php else: ?>
+                        <?php foreach ($memos as $m): ?>
+                        <div class="memo-list-item" onclick="toggleCheckbox('cb-<?php echo $m['memo_no']; ?>', event)">
+                            <div class="memo-checkbox">
+                                <input type="checkbox" name="id[]" value="<?php echo htmlspecialchars($m['memo_no']); ?>" id="cb-<?php echo $m['memo_no']; ?>" onchange="updateSelectionCount()">
+                            </div>
+                            <div class="memo-details">
+                                <h4><?php echo htmlspecialchars($m['memo_no']); ?></h4>
+                                <p><?php echo date('d-m-Y', strtotime($m['date'])); ?> &bull; <?php echo htmlspecialchars($m['customer_name'] ?: 'No Name'); ?></p>
+                                <div class="memo-actions">
+                                    <a href="edit-memo.php?id=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-secondary" onclick="event.stopPropagation()">Edit</a>
+                                    <a href="export.php?id[]=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-primary" onclick="event.stopPropagation()">Export / Print</a>
+                                    <a href="duplicate-memo.php?id=<?php echo urlencode($m['memo_no']); ?>" class="btn-sm btn-secondary" onclick="event.stopPropagation()">Dup</a>
+                                </div>
+                            </div>
+                            <div class="memo-price">₹<?php echo number_format($m['total'] ?? 0, 0); ?></div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Bottom Action Bar for Bulk Select -->
+                <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
+                    <div class="selected-count">Selected: <span id="selCount">0</span></div>
+                    <button type="submit" class="btn btn-primary btn-lg">Export / Print Selected</button>
+                    <button type="submit" formaction="api/delete-memo.php" formmethod="POST" class="btn btn-danger btn-lg" style="margin-left:10px;" onclick="return confirm('Are you sure you want to delete selected memos?');">Delete</button>
+                </div>
+            </form>
         </div>
     </div>
+
+    <script>
+        function updateSelectionCount() {
+            const checkboxes = document.querySelectorAll('input[name="id[]"]');
+            let count = 0;
+            checkboxes.forEach(cb => {
+                const item = cb.closest('.memo-list-item');
+                if (cb.checked) {
+                    count++;
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            const bar = document.getElementById('bottomActionBar');
+            const countSpan = document.getElementById('selCount');
+            countSpan.textContent = count;
+
+            if (count > 0) {
+                bar.style.display = 'flex';
+                document.body.style.paddingBottom = '80px';
+            } else {
+                bar.style.display = 'none';
+                document.body.style.paddingBottom = '0';
+            }
+        }
+
+        function toggleCheckbox(id, event) {
+            // Prevent toggling if clicked on a button or link
+            if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT') {
+                return;
+            }
+            const cb = document.getElementById(id);
+            cb.checked = !cb.checked;
+            updateSelectionCount();
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('input[name="id[]"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updateSelectionCount();
+        }
+
+        function clearSelection() {
+            const checkboxes = document.querySelectorAll('input[name="id[]"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateSelectionCount();
+        }
+    </script>
 </body>
 </html>
