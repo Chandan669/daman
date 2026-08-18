@@ -102,3 +102,33 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Database
+*.sqlite3
+*.db
+
+# Node.js
+node_modules/
+dist/
+build/
+.npm/
+
+# Playwright
+test-results/
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
