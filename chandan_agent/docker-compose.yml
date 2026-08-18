@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ./gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - AGENT_SECRET=${AGENT_SECRET:-production-secret-key-change-me}
+      - ALLOW_DEV_STARTUP=false
+    volumes:
+      - gateway_data:/app
+    restart: unless-stopped
+
+volumes:
+  gateway_data:
