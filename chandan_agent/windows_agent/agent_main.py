@@ -16,10 +16,10 @@ TOKEN = os.getenv("AGENT_TOKEN") # Will be saved after pairing
 from core.orchestrator import AIOrchestrator
 from tools.registry import registry
 from core.permissions import PermissionManager
-from core.ai_provider import DummyAIProvider
+from core.ai_provider import get_ai_provider
 
 pm = PermissionManager()
-ai_provider = DummyAIProvider()
+ai_provider = get_ai_provider()
 orchestrator = AIOrchestrator(registry, pm, ai_provider)
 
 async def heartbeat(websocket):
