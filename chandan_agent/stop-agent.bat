@@ -1,5 +1,4 @@
 @echo off
-echo Stopping Chandan Agent processes...
-taskkill /F /IM "node.exe" /T
+echo Stopping Windows Agent processes...
 taskkill /F /IM "python.exe" /T
 echo Agent stopped.
