@@ -1,14 +1,17 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
+from api.auth import router as auth_router
+from api.auth import verify_token
 import json
 
 app = FastAPI(title="Chandan Agent API")
-app.include_router(router, prefix="/api")
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(router, prefix="/api", dependencies=[Depends(verify_token)])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

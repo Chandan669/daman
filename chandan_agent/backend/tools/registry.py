@@ -17,11 +17,4 @@ class ToolRegistry:
     def get_tool(self, name: str) -> Tool:
         return self.tools.get(name)
 
-# Dummy basic tools
-import os
-
-def list_files(path: str = "."):
-    return os.listdir(path)
-
 registry = ToolRegistry()
-registry.register(Tool("filesystem.list", list_files, PermissionLevel.READ))

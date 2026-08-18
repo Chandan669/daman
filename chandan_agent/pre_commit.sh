@@ -2,4 +2,7 @@
 set -e
 echo "Running Pre-commit Instructions..."
 npm run test
-echo "All tests passed successfully!"
+cd frontend
+npm run build
+cd ..
+echo "All verifications passed successfully!"
