@@ -1,0 +1,368 @@
+/* Base Styles */
+:root {
+    --bg-main: #1e1e24;
+    --bg-sidebar: #252530;
+    --bg-card: #2b2b36;
+    --bg-input: #363645;
+    --text-main: #ffffff;
+    --text-muted: #a0a0b0;
+    --accent-red: #ff6b6b;
+    --accent-red-hover: #ff4757;
+    --accent-green: #1dd1a1;
+    --accent-green-hover: #10ac84;
+    --accent-blue: #54a0ff;
+    --border-color: #4a4a5e;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Layout */
+#app-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+}
+
+/* Top Scrollable Navigation */
+#top-nav {
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.nav-brand {
+    padding: 15px 20px;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: var(--accent-red);
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    letter-spacing: 1px;
+}
+
+.scrollable-tabs {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding: 0 10px;
+}
+.scrollable-tabs::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for cleaner look on mobile */
+}
+
+.nav-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    margin: 0 5px;
+}
+
+.nav-tab:hover {
+    color: var(--text-main);
+}
+
+.nav-tab.active {
+    border-bottom: 3px solid var(--accent-red);
+    color: var(--text-main);
+}
+
+/* Main Content Area */
+#main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 40px; /* Give some breathing room at the bottom */
+}
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* Login Screen */
+#login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-main);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-box {
+    background: var(--bg-sidebar);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    border-top: 4px solid var(--accent-red);
+}
+
+#login-box h2 {
+    margin-top: 0;
+    color: var(--text-main);
+}
+
+/* Generic View Container */
+.view-container {
+    display: none;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.view-container.active {
+    display: block;
+}
+
+/* Forms & Inputs */
+.form-group {
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: var(--text-muted);
+}
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+.btn {
+    padding: 12px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: background 0.2s;
+    text-transform: uppercase;
+}
+.btn-primary { background: var(--accent-red); }
+.btn-primary:hover { background: var(--accent-red-hover); }
+.btn-success { background: var(--accent-green); }
+.btn-success:hover { background: var(--accent-green-hover); }
+.btn-info { background: var(--accent-blue); }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+th {
+    background-color: var(--bg-card);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}
+tr:hover {
+    background-color: var(--bg-input);
+}
+
+/* Dashboard Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.kpi-card {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 8px;
+    border-top: 3px solid var(--accent-blue);
+}
+.kpi-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+.kpi-card .value {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* Alerts */
+#alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+.alert {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    min-width: 250px;
+}
+.alert-success { background-color: var(--accent-green); }
+.alert-error { background-color: var(--accent-red); }
+.alert-warning { background-color: #feca57; color: #222; }
+
+/* Grid Layouts for forms */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.form-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 769px) {
+    /* Optionally limit max width on large screens to make forms readable */
+    #main-content {
+        align-items: center;
+    }
+    .view-container {
+        width: 100%;
+        max-width: 1200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid, .form-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group[style*="grid-column: span 2;"] {
+        grid-column: span 1 !important;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* Make actions flex wrap nicely */
+    .form-group[style*="gap: 10px;"] {
+        flex-direction: column;
+    }
+
+    /* Mobile Card-style Tables */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+
+    td {
+        /* Behave like a "row" */
+        border: none;
+        border-bottom: 1px solid var(--bg-input);
+        position: relative;
+        padding-left: 50%;
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    td:last-child {
+        border-bottom: 0;
+        justify-content: center;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+    td:before {
+        /* Now like a table header */
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: var(--text-muted);
+        font-size: 0.85em;
+    }
+
+    /* Add labels for Product List Table */
+    #products-table td:nth-of-type(1):before { content: "Product"; }
+    #products-table td:nth-of-type(2):before { content: "Cost"; }
+    #products-table td:nth-of-type(3):before { content: "Price"; }
+    #products-table td:nth-of-type(4):before { content: "Current Stock"; }
+
+    /* Add labels for Ledger Table */
+    #ledger-table td:nth-of-type(1):before { content: "Date"; }
+    #ledger-table td:nth-of-type(2):before { content: "Entity"; }
+    #ledger-table td:nth-of-type(3):before { content: "Type"; }
+    #ledger-table td:nth-of-type(4):before { content: "Product"; }
+    #ledger-table td:nth-of-type(5):before { content: "Qty"; }
+    #ledger-table td:nth-of-type(6):before { content: "Total"; }
+    #ledger-table td:nth-of-type(7):before { content: "Paid"; }
+    #ledger-table td:nth-of-type(8):before { content: "Pending"; }
+    #ledger-table td:nth-of-type(9):before { content: "Pay Mode"; }
+
+    /* Disable hover background on mobile cards */
+    tr:hover {
+        background-color: var(--bg-card);
+    }
+}

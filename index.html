@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAZRIO Stock Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Include html2pdf for Reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2 style="color: var(--accent-red); font-weight:bold; letter-spacing:1px; margin-bottom: 20px;">BAZRIO.COM</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label style="text-align:left;">Enter Admin Password</label>
+                    <input type="password" id="login_password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login to Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div id="app-container" style="display:none;"> <!-- Hidden initially -->
+        <!-- Top Fixed Scrollable Navigation -->
+        <header id="top-nav">
+            <div class="nav-brand">BAZRIO.COM</div>
+            <div class="scrollable-tabs">
+                <a href="#" onclick="showView('dashboard')" class="nav-tab active" id="nav-dashboard">📊 Dashboard</a>
+                <a href="#" onclick="showView('products')" class="nav-tab" id="nav-products">📦 Stock Master</a>
+                <a href="#" onclick="showView('stockin')" class="nav-tab" id="nav-stockin">➕ Stock In</a>
+                <a href="#" onclick="showView('stockout')" class="nav-tab" id="nav-stockout">➖ Stock Out</a>
+                <a href="#" onclick="showView('ledger')" class="nav-tab" id="nav-ledger">🏢 Ledger</a>
+                <a href="#" onclick="showView('supply')" class="nav-tab" id="nav-supply">📄 Supply Order</a>
+                <a href="#" onclick="showView('reports')" class="nav-tab" id="nav-reports">📈 Reports</a>
+                <a href="#" onclick="showView('settings')" class="nav-tab" id="nav-settings">⚙️ Settings</a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+
+            <!-- 1. Dashboard View -->
+            <div id="view-dashboard" class="view-container active">
+                <div id="dashboard-data">
+                    <h2>Dashboard Overview</h2>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <h3>Total Stock Value</h3>
+                            <div class="value" id="kpi-stock-value">₹0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <h3>Today's Stock In</h3>
+                            <div class="value" id="kpi-today-in">0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <h3>Today's Stock Out</h3>
+                            <div class="value" id="kpi-today-out">0</div>
+                        </div>
+                        <div class="kpi-card" style="border-top-color: var(--accent-red)">
+                            <h3>Total Pending Receivables</h3>
+                            <div class="value" id="kpi-total-pending">₹0</div>
+                        </div>
+                    </div>
+
+                    <h3>Low Stock Alerts</h3>
+                <div class="table-responsive">
+                    <table id="low-stock-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Available</th>
+                                <th>Min Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+
+            <!-- 2. Products Master View -->
+            <div id="view-products" class="view-container">
+                <h2>T-Shirt Master / Product Setup</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <form id="form-product" onsubmit="handleProductSubmit(event)">
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label>Design/Name</label>
+                                <input type="text" id="p_name" required placeholder="e.g. Army T-Shirt">
+                            </div>
+                            <div class="form-group">
+                                <label>Color</label>
+                                <input type="text" id="p_color" required placeholder="e.g. Black">
+                            </div>
+                            <div class="form-group">
+                                <label>Size</label>
+                                <select id="p_size" required>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                    <option value="XXXL">XXXL</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Sleeve Type</label>
+                                <select id="p_sleeve" required>
+                                    <option value="Half">Half Sleeve</option>
+                                    <option value="Full">Full Sleeve</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cost Price (₹)</label>
+                                <input type="number" id="p_cost" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Selling/Issue Price (₹)</label>
+                                <input type="number" id="p_sell" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Opening Stock (Qty)</label>
+                                <input type="number" id="p_open" required min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Min Stock Alert</label>
+                                <input type="number" id="p_min" required min="0" value="10">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end; gap: 10px;">
+                                <input type="hidden" id="p_id">
+                                <button type="submit" class="btn btn-primary" id="btn_save_product" style="flex:1;">Add Product</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_product" style="display:none;" onclick="cancelProductEdit()">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <h3>Product List</h3>
+                <div class="table-responsive">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Cost</th>
+                                <th>Price</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Stock IN View -->
+            <div id="view-stockin" class="view-container">
+                <h2>Stock IN (Add Inventory)</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px;">
+                    <form id="form-in" onsubmit="handleTxSubmit(event, 'IN')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="in_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier Name</label>
+                                <input type="text" id="in_entity" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Product</label>
+                                <select id="in_product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="in_qty" required min="1" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Per Piece Cost (₹)</label>
+                                <input type="number" id="in_rate" required min="0" step="0.01" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="in_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Paid Amount (₹)</label>
+                                <input type="number" id="in_paid" required min="0" value="0" onchange="calcTotal('in')">
+                            </div>
+                            <div class="form-group">
+                                <label>Pending Amount (₹)</label>
+                                <input type="number" id="in_pending" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Mode</label>
+                                <select id="in_paymentMode">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit (Udhar)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
+                                <input type="hidden" id="in_id">
+                                <button type="submit" class="btn btn-primary" id="btn_save_in">Save Stock IN</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_in" style="display:none;" onclick="cancelTxEdit('in')">Cancel Edit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. Stock OUT View -->
+            <div id="view-stockout" class="view-container">
+                <h2>Stock OUT (Issue to Company/Person)</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px;">
+                    <form id="form-out" onsubmit="handleTxSubmit(event, 'OUT')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="out_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Company/Person Name</label>
+                                <input type="text" id="out_entity" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Product (Shows Available Stock)</label>
+                                <select id="out_product" required onchange="setOutRate()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="out_qty" required min="1" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Per Piece Price (₹)</label>
+                                <input type="number" id="out_rate" required min="0" step="0.01" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="out_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Paid Amount (₹)</label>
+                                <input type="number" id="out_paid" required min="0" value="0" onchange="calcTotal('out')">
+                            </div>
+                            <div class="form-group">
+                                <label>Pending Amount (₹)</label>
+                                <input type="number" id="out_pending" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Mode</label>
+                                <select id="out_paymentMode">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit (Udhar)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2; display: flex; gap: 10px;">
+                                <input type="hidden" id="out_id">
+                                <button type="submit" class="btn btn-success" id="btn_save_out">Issue Stock OUT</button>
+                                <button type="button" class="btn btn-info" id="btn_cancel_out" style="display:none;" onclick="cancelTxEdit('out')">Cancel Edit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 5. Ledger / Payments -->
+            <div id="view-ledger" class="view-container">
+                <h2>Company/Customer Ledger</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Filter by Company/Customer</label>
+                        <select id="ledger_filter" onchange="renderLedger()">
+                            <option value="">All Transactions</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Entity</th>
+                                <th>Type</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Pending</th>
+                                <th>Pay Mode</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Supply Order Module -->
+            <div id="view-supply" class="view-container">
+                <h2>Create Supply Order</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <form id="form-supply" onsubmit="generateSupplyOrderPDF(event)">
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <h3>Company Details</h3>
+                            </div>
+                            <div class="form-group">
+                                <label>Your Company Name</label>
+                                <input type="text" id="so_my_company" required value="BAZRIO.COM">
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier / Vendor Name</label>
+                                <input type="text" id="so_supplier" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Order Date</label>
+                                <input type="date" id="so_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Expected Delivery Date</label>
+                                <input type="date" id="so_delivery" required>
+                            </div>
+
+                            <div class="form-group" style="grid-column: span 2;">
+                                <h3>Product Details</h3>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Select Product (Shows Current Stock)</label>
+                                <select id="so_product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier T-Shirt Code (Optional)</label>
+                                <input type="text" id="so_code" placeholder="e.g. ARMY-TS-01">
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity Required</label>
+                                <input type="number" id="so_qty" required min="1" onchange="calcSupplyTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Rate (₹)</label>
+                                <input type="number" id="so_rate" required min="0" step="0.01" onchange="calcSupplyTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount (₹)</label>
+                                <input type="number" id="so_total" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Structure / Terms</label>
+                                <input type="text" id="so_payment_terms" placeholder="e.g. 50% Advance, 50% on Delivery">
+                            </div>
+
+                            <div class="form-group" style="grid-column: span 2; margin-top: 10px;">
+                                <button type="submit" class="btn btn-primary">Generate Supply Order PDF</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Hidden PDF Template for Supply Order -->
+                <div id="supply-order-pdf" style="background: #fff; color: #000; padding: 40px; border-radius: 8px; display: none;">
+                    <div style="text-align: center; border-bottom: 2px solid #222; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h1 id="pdf_so_company" style="margin: 0; color: #d63031;">BAZRIO.COM</h1>
+                        <h2 style="margin: 5px 0 0 0; color: #555;">PURCHASE / SUPPLY ORDER</h2>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                        <div>
+                            <strong>To (Supplier):</strong> <span id="pdf_so_supplier"></span><br>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>Order Date:</strong> <span id="pdf_so_date"></span><br>
+                            <strong>Delivery Date:</strong> <span id="pdf_so_delivery"></span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                    <table style="width:100%; border-collapse:collapse; color:#000; margin-bottom: 30px;" border="1">
+                        <thead>
+                            <tr style="background:#f1f2f6;">
+                                <th style="padding:10px; text-align:left;">Product Description</th>
+                                <th style="padding:10px; text-align:left;">Supplier Code</th>
+                                <th style="padding:10px; text-align:center;">Quantity</th>
+                                <th style="padding:10px; text-align:right;">Rate (₹)</th>
+                                <th style="padding:10px; text-align:right;">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:10px;" id="pdf_so_pname"></td>
+                                <td style="padding:10px;" id="pdf_so_pcode"></td>
+                                <td style="padding:10px; text-align:center;" id="pdf_so_pqty"></td>
+                                <td style="padding:10px; text-align:right;" id="pdf_so_prate"></td>
+                                <td style="padding:10px; text-align:right; font-weight:bold;" id="pdf_so_ptotal"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <div style="border-top: 1px solid #ccc; padding-top: 15px;">
+                        <strong>Payment Terms:</strong> <span id="pdf_so_pterms"></span>
+                    </div>
+
+                    <div style="margin-top: 60px; display: flex; justify-content: space-between;">
+                        <div style="border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px;">Authorized Signature</div>
+                        <div style="border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px;">Supplier Acceptance</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Reports & PDF -->
+            <div id="view-reports" class="view-container">
+                <h2>Reports & PDF Export</h2>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" id="rep_from">
+                        </div>
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <input type="date" id="rep_to">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                            <button class="btn btn-info" onclick="downloadPDF()">Download as PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="report-content" style="background: #fff; color: #000; padding: 20px; border-radius: 8px; display: none;">
+                    <h1 style="text-align:center; color:#d63031; border-bottom:2px solid #d63031;" id="pdf-title">BAZRIO.COM</h1>
+                    <h3 style="text-align:center;">Stock & Inventory Report</h3>
+                    <p style="text-align:center;" id="pdf-dates"></p>
+
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 20px; border-top:1px solid #ccc; padding-top:10px;">
+                        <div>
+                            <strong>Total Sales/Issue:</strong> <span id="rep-sales">0</span><br>
+                            <strong>Total Profit:</strong> <span id="rep-profit" style="color:green">0</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong>Total Pending Amount:</strong> <span id="rep-pending" style="color:red">0</span><br>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                    <table style="width:100%; border-collapse:collapse; color:#000;" border="1">
+                        <thead>
+                            <tr style="background:#f1f2f6;">
+                                <th style="padding:8px">Date</th>
+                                <th style="padding:8px">Type</th>
+                                <th style="padding:8px">Product</th>
+                                <th style="padding:8px">Qty</th>
+                                <th style="padding:8px">Rate</th>
+                                <th style="padding:8px">Total</th>
+                                <th style="padding:8px">Pay Mode</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body"></tbody>
+                    </table>
+                    </div>
+
+                    <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+                        <h4>Stock Summary (As of Report Date)</h4>
+                        <div id="report-stock-summary">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Settings -->
+            <div id="view-settings" class="view-container">
+                <h2>Settings & Backup</h2>
+
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3>Email Notifications</h3>
+                    <p>Enter email addresses to receive the 8:00 PM daily stock report (comma separated).</p>
+                    <form onsubmit="saveEmails(event)">
+                        <div class="form-group">
+                            <label>Report Emails</label>
+                            <input type="text" id="settings_emails" placeholder="admin@example.com, owner@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-info">Save Emails</button>
+                    </form>
+                </div>
+
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3>Data Backup (JSON)</h3>
+                    <p>Since this app uses browser storage (No Database), please backup your data regularly.</p>
+                    <button class="btn btn-success" onclick="db.exportBackup()">Export Backup</button>
+
+                    <hr style="border-color: var(--border-color); margin: 20px 0;">
+
+                    <h3>Restore Backup</h3>
+                    <input type="file" id="import_file" accept=".json" style="margin-bottom: 10px;">
+                    <button class="btn btn-info" onclick="handleImport()">Import Backup</button>
+
+                    <hr style="border-color: var(--border-color); margin: 20px 0;">
+
+                    <button class="btn btn-primary" onclick="db.clearAll() && location.reload()" style="background: #e84118">Clear All Data (Factory Reset)</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
