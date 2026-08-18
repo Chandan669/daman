@@ -103,6 +103,34 @@ body {
     width: 100%;
 }
 
+/* Login Screen */
+#login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-main);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-box {
+    background: var(--bg-sidebar);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    border-top: 4px solid var(--accent-red);
+}
+
+#login-box h2 {
+    margin-top: 0;
+    color: var(--text-main);
+}
+
 /* Generic View Container */
 .view-container {
     display: none;

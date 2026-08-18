@@ -3,7 +3,21 @@
  * Application logic for BAZRIO Stock Manager
  */
 
-// --- 1. UI NAVIGATION ---
+// --- 1. LOGIN & UI NAVIGATION ---
+function handleLogin(e) {
+    e.preventDefault();
+    const pass = document.getElementById('login_password').value;
+    if(pass === 'Chandna988@@@') {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        // Check if settings has emails, populate them
+        const emails = db.getSettings().emails || '';
+        document.getElementById('settings_emails').value = emails;
+    } else {
+        showAlert('Incorrect password', 'error');
+    }
+}
+
 function showView(viewId) {
     document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -512,6 +526,15 @@ function generateSupplyOrderPDF(e) {
     });
 }
 
+
+function saveEmails(e) {
+    e.preventDefault();
+    const emails = document.getElementById('settings_emails').value;
+    const settings = db.getSettings();
+    settings.emails = emails;
+    db.saveSettings(settings);
+    showAlert('Email settings saved!');
+}
 
 function handleImport() {
     const file = document.getElementById('import_file').files[0];

@@ -10,9 +10,22 @@
 </head>
 <body>
 
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2 style="color: var(--accent-red); font-weight:bold; letter-spacing:1px; margin-bottom: 20px;">BAZRIO.COM</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label style="text-align:left;">Enter Admin Password</label>
+                    <input type="password" id="login_password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login to Dashboard</button>
+            </form>
+        </div>
+    </div>
+
     <div id="alert-container"></div>
 
-    <div id="app-container">
+    <div id="app-container" style="display:none;"> <!-- Hidden initially -->
         <!-- Top Fixed Scrollable Navigation -->
         <header id="top-nav">
             <div class="nav-brand">BAZRIO.COM</div>
@@ -471,6 +484,18 @@
             <!-- 7. Settings -->
             <div id="view-settings" class="view-container">
                 <h2>Settings & Backup</h2>
+
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3>Email Notifications</h3>
+                    <p>Enter email addresses to receive the 8:00 PM daily stock report (comma separated).</p>
+                    <form onsubmit="saveEmails(event)">
+                        <div class="form-group">
+                            <label>Report Emails</label>
+                            <input type="text" id="settings_emails" placeholder="admin@example.com, owner@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-info">Save Emails</button>
+                    </form>
+                </div>
 
                 <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <h3>Data Backup (JSON)</h3>

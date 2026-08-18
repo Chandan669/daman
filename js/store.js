@@ -54,6 +54,19 @@ class Store {
 
     saveAll(data) {
         localStorage.setItem(STORE_KEY, JSON.stringify(data));
+        this.syncWithServer(data);
+    }
+
+    syncWithServer(data) {
+        // Send a copy to the local Node server so it can send automated emails
+        fetch('/sync', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer Chandna988@@@'
+            },
+            body: JSON.stringify(data)
+        }).catch(err => console.error("Sync to server failed (expected if offline)", err));
     }
 
     // --- Products ---
@@ -146,7 +159,7 @@ class Store {
 
     // --- System / Settings ---
     getSettings() {
-        return this.getAll().settings;
+        return this.getAll().settings || defaultDB.settings;
     }
 
     saveSettings(settings) {
